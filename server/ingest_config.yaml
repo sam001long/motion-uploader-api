@@ -1,6 +1,3 @@
-<!-- =============================
-= FILE: server/ingest_config.yaml
-============================== -->
 canonical:
   required: [timestamp, joint, metric, value]
   defaults:
