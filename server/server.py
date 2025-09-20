@@ -1,12 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, PlainTextResponse
+from fastapi.responses import StreamingResponse
 from typing import List, Optional
 import os, io
 import pandas as pd
 from sqlalchemy.sql import text
 from dotenv import load_dotenv
-from pipeline import ingest_file_bytes, engine  # engine 來自 pipeline.py（已存在）
+from pipeline import ingest_file_bytes, engine
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY", "").strip()
@@ -14,7 +14,6 @@ CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o
 
 app = FastAPI(title="Motion Uploader API")
 
-# CORS（預設 *，可用環境變數限制）
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS or ["*"],
@@ -41,7 +40,7 @@ async def upload(files: List[UploadFile] = File(...), x_api_key: Optional[str] =
         results.append(res)
     return {"results": results}
 
-# ---------- 匯出：整理後的資料 ----------
+# ---- 匯出端點：下載整理後 CSV ----
 
 def _df_to_csv_response(df: pd.DataFrame, filename: str) -> StreamingResponse:
     bio = io.StringIO()
@@ -56,13 +55,11 @@ def _df_to_csv_response(df: pd.DataFrame, filename: str) -> StreamingResponse:
 @app.get("/api/export/measurements.csv")
 async def export_measurements(
     x_api_key: Optional[str] = Header(default=None),
-    limit: Optional[int] = Query(None, ge=1, le=500000, description="最多輸出列數"),
-    since: Optional[float] = Query(None, description="只輸出 timestamp >= since（秒）"),
-    session_id: Optional[str] = Query(None, description="只輸出指定 session_id")
+    limit: Optional[int] = Query(None, ge=1, le=500000),
+    since: Optional[float] = Query(None),
+    session_id: Optional[str] = Query(None)
 ):
-    """下載整理後的 measurements（統一欄位）。"""
     require_key(x_api_key)
-
     base_sql = "SELECT timestamp,joint,metric,value,unit,confidence,session_id,subject_id,activity FROM measurements"
     conds = []
     params = {}
@@ -78,18 +75,16 @@ async def export_measurements(
     if limit:
         base_sql += " LIMIT :lim"
         params["lim"] = int(limit)
-
     with engine.connect() as conn:
         df = pd.read_sql_query(text(base_sql), conn, params=params)
     return _df_to_csv_response(df, "measurements.csv")
 
 @app.get("/api/export/sources.csv")
 async def export_sources(x_api_key: Optional[str] = Header(default=None)):
-    """下載來源檔處理狀態（含去重 hash、訊息）。"""
     require_key(x_api_key)
     sql = "SELECT id,provider,filename,file_hash,status,message,created_at FROM source_files ORDER BY id DESC"
     with engine.connect() as conn:
         df = pd.read_sql_query(text(sql), conn)
     return _df_to_csv_response(df, "sources.csv")
 
-# 本機開發： python -m uvicorn server:app --reload --port 8787
+# 本機： uvicorn server:app --reload --port 8787
