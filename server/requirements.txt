@@ -1,1 +1,13 @@
+<!-- =============================
+= FILE: server/requirements.txt
+============================== -->
+# 後端（FastAPI + 清洗與入庫）
+fastapi
+uvicorn
+pandas
+SQLAlchemy
+pydantic
+pyyaml
+python-dotenv
+openpyxl
 
