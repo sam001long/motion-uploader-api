@@ -60,7 +60,7 @@
 
   <script>
     // === 可調整：預設 API（初次載入會寫到輸入框） ===
-    const DEFAULT_API_BASE = "http://localhost:8787"; // 本機開發時用；上線請改成你的後端網址
+    const DEFAULT_API_BASE = "https://motion-uploader-api-1.onrender.com"; // 本機開發時用；上線請改成你的後端網址
     const apiBaseInput = document.getElementById('apiBase');
     apiBaseInput.value = localStorage.getItem('apiBase') || DEFAULT_API_BASE;
     apiBaseInput.addEventListener('change', () => localStorage.setItem('apiBase', apiBaseInput.value.trim()));
@@ -114,7 +114,7 @@
         const res = await fetch(api + '/api/upload', {
           method: 'POST', body: fd,
           // 上線時若伺服器要求 API_KEY，解開下方設定：
-          // headers: { 'X-API-Key': 'YOUR_API_KEY_HERE' },
+          headers: { 'X-API-Key': 'sam-db-xyz' },
         });
         const data = await res.json();
 
