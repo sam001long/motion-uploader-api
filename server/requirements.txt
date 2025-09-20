@@ -7,5 +7,6 @@ pydantic
 pyyaml
 python-dotenv
 openpyxl
+python-multipart
 
 
