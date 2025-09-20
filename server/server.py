@@ -1,6 +1,3 @@
-<!-- =============================
-= FILE: server/server.py
-============================== -->
 from fastapi import FastAPI, UploadFile, File, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
