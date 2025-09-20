@@ -1,6 +1,3 @@
-<!-- =============================
-= FILE: server/pipeline.py
-============================== -->
 from __future__ import annotations
 import os, hashlib, json, math, io
 from pathlib import Path
